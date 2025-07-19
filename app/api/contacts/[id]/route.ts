@@ -1,23 +1,29 @@
+import { NextRequest, NextResponse } from 'next/server';
 import { connectMongo } from '@/lib/db';
 import { Contact } from '@/lib/models/Contact';
 
-import { NextResponse } from 'next/server';
-
-export async function PUT(req: Request, { params }: { params: { id: string } }) {
+export async function GET(req: NextRequest, context: { params: { id: string } }) {
   await connectMongo();
+  const { id } = context.params;
+
+  const contact = await Contact.findById(id);
+  if (!contact) return NextResponse.json({ message: 'Not found' }, { status: 404 });
+
+  return NextResponse.json(contact);
+}
+
+export async function PUT(req: NextRequest, context: { params: { id: string } }) {
+  await connectMongo();
+  const { id } = context.params;
   const data = await req.json();
 
   // Kiểm tra email hoặc phone trùng với người khác (trừ chính nó)
   const existing = await Contact.findOne({
-    $and: [
-      { _id: { $ne: params.id } },
-      {
-        $or: [
-          { email: data.email },
-          { phone: data.phone },
-        ]
-      }
-    ]
+    _id: { $ne: id },
+    $or: [
+      { email: data.email },
+      { phone: data.phone },
+    ],
   });
 
   if (existing) {
@@ -27,21 +33,18 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
     );
   }
 
-  const updated = await Contact.findByIdAndUpdate(params.id, data, { new: true });
+  const updated = await Contact.findByIdAndUpdate(id, data, { new: true });
   if (!updated) return NextResponse.json({ message: 'Not found' }, { status: 404 });
+
   return NextResponse.json(updated);
 }
 
-export async function DELETE(req: Request, { params }: { params: { id: string } }) {
+export async function DELETE(req: NextRequest, context: { params: { id: string } }) {
   await connectMongo();
-  const deleted = await Contact.findByIdAndDelete(params.id);
-  if (!deleted) return NextResponse.json({ message: 'Not found' }, { status: 404 });
-  return NextResponse.json({ message: 'Deleted' });
-}
+  const { id } = context.params;
 
-export async function GET(_: Request, { params }: { params: { id: string } }) {
-  await connectMongo();
-  const contact = await Contact.findById(params.id);
-  if (!contact) return NextResponse.json({ message: 'Not found' }, { status: 404 });
-  return NextResponse.json(contact);
+  const deleted = await Contact.findByIdAndDelete(id);
+  if (!deleted) return NextResponse.json({ message: 'Not found' }, { status: 404 });
+
+  return NextResponse.json({ message: 'Deleted' });
 }

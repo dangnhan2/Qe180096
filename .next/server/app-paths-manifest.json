@@ -1,6 +1,4 @@
 {
-  "/_not-found/page": "app/_not-found/page.js",
-  "/add-contact/page": "app/add-contact/page.js",
   "/api/contacts/[id]/route": "app/api/contacts/[id]/route.js",
   "/api/contacts/route": "app/api/contacts/route.js",
   "/edit-contacts/[id]/page": "app/edit-contacts/[id]/page.js",
