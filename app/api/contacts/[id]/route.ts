@@ -17,7 +17,6 @@ export async function PUT(req: NextRequest, context: { params: { id: string } })
   const { id } = context.params;
   const data = await req.json();
 
-  // Kiểm tra email hoặc phone trùng với người khác (trừ chính nó)
   const existing = await Contact.findOne({
     _id: { $ne: id },
     $or: [
